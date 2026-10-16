@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHISHGUARD | Email Threat Analysis</title>
+<style>
+:root{color-scheme:dark;--bg:#08111f;--panel:#101d30;--line:#253750;--teal:#36e0c0;--muted:#9cafc7;--text:#edf5ff}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 0%,#15314a 0,transparent 48%),var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,sans-serif;min-height:100vh}
+.wrap{max-width:960px;margin:auto;padding:32px 22px 55px}
+nav{display:flex;align-items:center;gap:13px;padding:12px 0 48px}
+.logo{height:46px;width:46px;display:grid;place-items:center;border:1px solid #2b887e;border-radius:14px;background:#103a3b;color:var(--teal);font-size:25px}
+.brand{font-weight:850;letter-spacing:2px;font-size:20px}
+.brand small{display:block;font-size:10px;color:var(--muted);letter-spacing:3px;font-weight:600}
+.status{margin-left:auto;color:var(--teal);font-size:12px;border:1px solid #225b58;border-radius:30px;padding:5px 10px}
+.hero{text-align:center;max-width:700px;margin:0 auto 34px}
+.eyebrow{color:var(--teal);font-size:12px;letter-spacing:3px;font-weight:800}
+h1{font-size:clamp(34px,6vw,55px);line-height:1.12;letter-spacing:-1.5px;margin:15px 0}
+h1 span{color:var(--teal)}
+p{color:var(--muted)}
+.hero p{font-size:16px;max-width:570px;margin:0 auto}
+.card{max-width:690px;margin:auto;padding:26px;background:rgba(16,29,48,.94);border:1px solid var(--line);border-radius:22px;box-shadow:0 24px 80px #0003}
+.cardhead{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.cardhead .symbol{font-size:22px;color:var(--teal)}
+.cardhead strong{display:block;font-size:17px}
+.cardhead span{font-size:12px;color:var(--muted)}
+.drop{position:relative;border:1px dashed #477184;background:#0a1828;border-radius:17px;padding:35px 16px;text-align:center;transition:.2s}
+.drop.drag{border-color:var(--teal);background:#102a35}
+.uploadicon{font-size:36px;color:var(--teal);margin-bottom:8px}
+.drop h2{font-size:18px;margin:0}
+.drop p{font-size:13px;margin:6px 0 18px}
+input[type=file]{display:none}
+.choose{display:inline-block;background:#153a46;color:var(--teal);border:1px solid #2a746e;border-radius:10px;padding:10px 17px;font-weight:700;cursor:pointer}
+.filename{margin:13px 0 0;color:var(--teal);font-size:13px;overflow-wrap:anywhere}
+.submit{width:100%;margin-top:18px;background:var(--teal);color:#06201f;border:0;border-radius:11px;padding:14px;font-size:15px;font-weight:850;cursor:pointer}
+.submit:hover{background:#79f3dd}
+.submit:disabled{opacity:.45;cursor:not-allowed}
+.error{background:#421f2a;border:1px solid #8e4354;color:#ffd9e0;padding:12px;border-radius:10px;margin-bottom:16px}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:25px}
+.feature{border:1px solid var(--line);border-radius:13px;padding:15px;background:#0c1929}
+.feature b{display:block;font-size:13px;margin-bottom:4px}
+.feature span{color:var(--muted);font-size:12px}
+.note{font-size:12px;text-align:center;margin-top:20px}
+footer{text-align:center;color:#7187a2;font-size:12px;padding-top:32px}
+@media(max-width:600px){.wrap{padding:18px 14px}.features{grid-template-columns:1fr}.card{padding:17px}.hero p{font-size:14px}.status{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+<div class="logo" aria-hidden="true">⬡</div>
+<div class="brand">PHISHGUARD<small>EMAIL THREAT INTELLIGENCE</small></div>
+<div class="status">● LOCAL ANALYSIS</div>
+</nav>
+<section class="hero">
+<div class="eyebrow">EMAIL SECURITY WORKSPACE</div>
+<h1>See the threat.<br><span>Before it sees you.</span></h1>
+<p>Analyze suspicious email files with machine learning, header forensics and URL risk indicators in one clear report.</p>
+</section>
+<main class="card">
+<div class="cardhead">
+<div class="symbol">⌁</div>
+<div><strong>Analyze an email</strong><span>Upload a message file to begin your security review.</span></div>
+</div>
+{% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+<form method="post" enctype="multipart/form-data">
+<div class="drop" id="drop">
+<div class="uploadicon">⇧</div>
+<h2>Drop your email file here</h2>
+<p>Or choose a file from your computer · .eml only · Maximum 10 MB</p>
+<label class="choose" for="email_file">Choose .eml file</label>
+<input id="email_file" name="email_file" type="file" accept=".eml,message/rfc822" required>
+<div class="filename" id="filename" aria-live="polite">No file selected</div>
+</div>
+<button class="submit" id="submit" type="submit">Analyze Email <span aria-hidden="true">→</span></button>
+</form>
+<div class="features">
+<div class="feature"><b>⌘ Header forensics</b><span>Review sender and authentication evidence.</span></div>
+<div class="feature"><b>◎ URL inspection</b><span>Surface configured link-risk indicators.</span></div>
+<div class="feature"><b>✳ ML prediction</b><span>Review the model's dataset-label prediction.</span></div>
+</div>
+<p class="note">Your email is processed locally by this application. Links are not opened. This is an aid to investigation, not a guarantee that an email is safe.</p>
+</main>
+<footer>PHISHGUARD · LOCAL EMAIL ANALYSIS · HANDLE SENSITIVE EMAILS WITH CARE</footer>
+</div>
+<script>
+const input=document.getElementById('email_file');
+const drop=document.getElementById('drop');
+const filename=document.getElementById('filename');
+const submit=document.getElementById('submit');
+function setFile(file){
+  if(!file)return;
+  if(!file.name.toLowerCase().endsWith('.eml')){
+    filename.textContent='Please choose a file ending in .eml';
+    input.value='';
+    return;
+  }
+  filename.textContent='Selected: '+file.name+' ('+(file.size/1024).toFixed(1)+' KB)';
+}
+input.addEventListener('change',()=>setFile(input.files[0]));
+['dragenter','dragover'].forEach(type=>drop.addEventListener(type,e=>{
+  e.preventDefault();drop.classList.add('drag');
+}));
+['dragleave','drop'].forEach(type=>drop.addEventListener(type,e=>{
+  e.preventDefault();drop.classList.remove('drag');
+}));
+drop.addEventListener('drop',e=>{
+  const file=e.dataTransfer.files[0];
+  if(!file)return;
+  const transfer=new DataTransfer();transfer.items.add(file);input.files=transfer.files;setFile(file);
+});
+input.form.addEventListener('submit',()=>{
+  if(input.files.length){submit.disabled=true;submit.textContent='Analyzing email…';}
+});
+</script>
+</body>
+</html>

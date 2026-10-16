@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHISHGUARD Security Report</title>
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #172337;
+    --muted: #5d6b7d;
+    --line: #dbe3ec;
+    --teal: #087f75;
+    --panel: #f5f8fb;
+    --red: #b42332;
+    --amber: #946200;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 18px;
+    background: #edf2f7;
+    color: var(--ink);
+    font: 14px/1.65 system-ui, sans-serif;
+  }
+  main { max-width: 960px; margin: auto; }
+  header {
+    padding: 28px;
+    background: #101e30;
+    color: white;
+    border-radius: 14px 14px 0 0;
+  }
+  .brand { font-size: 23px; font-weight: 850; letter-spacing: 1px; }
+  .brand span { color: #45e0c0; }
+  header p { color: #c5d2e1; margin-bottom: 0; }
+  section {
+    background: white;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-top: 0;
+    overflow-wrap: anywhere;
+  }
+  section:last-of-type { border-radius: 0 0 14px 14px; }
+  h1 { font-size: 27px; margin: 20px 0 4px; }
+  h2 { font-size: 18px; margin: 0 0 16px; }
+  h3 { font-size: 14px; margin: 18px 0 6px; }
+  .muted { color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .4px; }
+  .value { font-size: 16px; font-weight: 650; }
+  .pill { display: inline-block; padding: 3px 9px; border: 1px solid var(--line); border-radius: 16px; font-size: 12px; }
+  .notice { background: #fff8e7; border-left: 4px solid #d99b18; padding: 12px 14px; }
+  .finding { border-bottom: 1px solid var(--line); padding: 12px 0; }
+  .finding:last-child { border-bottom: 0; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; }
+  .url-table { table-layout: fixed; }
+  .url-table th:nth-child(1) { width: 42%; }
+  .url-table th:nth-child(2) { width: 18%; }
+  .url-table th:nth-child(3) { width: 12%; }
+  .url-table th:nth-child(4) { width: 28%; }
+  .url-table td { overflow-wrap: anywhere; }
+  th, td { border-bottom: 1px solid var(--line); padding: 10px; text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-size: 12px; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--panel); padding: 14px; border-radius: 8px; font: inherit; }
+  footer { max-width: 960px; margin: 20px auto 0; color: var(--muted); font-size: 12px; text-align: center; }
+  @media (max-width: 600px) {
+    body { padding: 12px 8px; }
+    section, header { padding: 18px; }
+    .grid { grid-template-columns: 1fr; }
+    table { min-width: 540px; }
+  }
+  @media print {
+    body { padding: 0; background: white; }
+    section, header { break-inside: avoid; }
+    header { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="brand">⬡ PHISH<span>GUARD</span></div>
+  <h1>Email Security Analysis Report</h1>
+  <p>Local analysis report generated from an uploaded email file.</p>
+</header>
+
+<section>
+  <h2>1. Email overview</h2>
+  <div class="grid">
+    <div><div class="label">File name</div><div class="value">{{ result.email.get('file_name', 'Uploaded email') }}</div></div>
+    <div><div class="label">Subject</div><div class="value">{{ result.email.get('subject') or '(No subject)' }}</div></div>
+    <div><div class="label">Sender</div><div class="value">{{ result.email.get('sender_name') or result.email.get('sender_email') or result.email.get('sender') or result.email.get('from') or '(Unknown sender)' }}</div></div>
+    <div><div class="label">Reply-To</div><div class="value">{{ result.email.get('reply_to') or '(Not provided)' }}</div></div>
+    <div><div class="label">Extracted URLs</div><div class="value">{{ result.url_results|length }}</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>2. Machine-learning assessment</h2>
+  {% if result.ml %}
+    {% set prediction = 'Legitimate' if (result.ml.get('predicted_label')|string) == '0' else 'Phishing (Malicious)' if (result.ml.get('predicted_label')|string) == '1' else 'Unknown' %}
+    <p class="value">Predicted classification: {{ prediction }}</p>
+    <p>{{ result.ml.get('note', 'Model prediction is an indicator, not a definitive verdict.') }}</p>
+    <div class="grid">
+      <div><div class="label">Legitimate probability</div><div class="value">{{ '%.2f'|format((result.ml.get('label_0_probability', 0)|float) * 100) }}%</div></div>
+      <div><div class="label">Phishing (Malicious) probability</div><div class="value">{{ '%.2f'|format((result.ml.get('label_1_probability', 0)|float) * 100) }}%</div></div>
+    </div>
+  {% else %}
+    <p>ML assessment unavailable.</p>
+    {% if result.ml_error %}<p>{{ result.ml_error }}</p>{% endif %}
+  {% endif %}
+</section>
+
+<section>
+  <h2>3. Header security findings</h2>
+  {% set header_findings = result.header_analysis.get('findings', []) if result.header_analysis else [] %}
+  {% if header_findings %}
+    {% for finding in header_findings %}
+      <div class="finding">
+        <strong>{{ finding.get('severity', 'Finding') }}</strong>
+        <p>{{ finding.get('details', finding.get('message', finding.get('detail', finding.get('indicator', finding|string)))) }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">No header findings were returned by the analyzer.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>4. URL risk analysis</h2>
+  {% if result.url_results %}
+    <div class="table-wrap">
+      <table class="url-table">
+        <thead><tr><th>URL</th><th>Risk level</th><th>Score</th><th>Findings</th></tr></thead>
+        <tbody>
+        {% for item in result.url_results %}
+          <tr>
+            <td>{{ item.get('url', 'Unknown URL') }}</td>
+            <td>{{ item.get('risk_level', 'Unknown') }}</td>
+            <td>{{ item.get('risk_score', 'N/A') }}</td>
+            <td>
+              {% set url_findings = item.get('findings', []) %}
+              {% if url_findings %}
+                {% for finding in url_findings %}
+                  <div>{{ finding.get('message', finding.get('detail', finding|string)) if finding is mapping else finding }}</div>
+                {% endfor %}
+              {% else %}
+                No heuristic findings
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">No URLs were extracted from the email.</p>
+  {% endif %}
+  <p class="muted">URL checks use configured heuristics. The application does not visit the extracted URLs.</p>
+</section>
+
+<section>
+  <h2>5. Available header evidence</h2>
+  {% if result.headers %}
+    {% set header_labels = {
+      'authentication_results': 'Authentication-Results',
+      'received_spf': 'Received-SPF',
+      'dkim_signature_present': 'DKIM signature header'
+    } %}
+    {% for key, value in result.headers.items() %}
+      <div class="finding">
+        <div class="label">{{ header_labels.get(key, key|replace('_', ' ')|title) }}</div>
+        <div>{{ value or '(Empty)' }}</div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">No header evidence available.</p>
+  {% endif %}
+  <p class="muted">Authentication headers are examined as supplied in the message. PHISHGUARD does not independently verify SPF, DKIM or DMARC.</p>
+</section>
+
+<section>
+  <h2>6. Extracted email text</h2>
+  <p class="muted">This is a text preview, limited to the first 8,000 characters. Attachments are not scanned.</p>
+  <pre>{{ (result.email.get('body') or '(No readable email body extracted)')[:8000] }}</pre>
+</section>
+
+<section>
+  <h2>Important limitations</h2>
+  <ul>
+    <li>Findings are indicators for investigation, not a guaranteed verdict.</li>
+    <li>URL checks are heuristic and do not establish the actual reputation or behaviour of a website.</li>
+    <li>Authentication results are read from the message headers and are not independently verified.</li>
+    <li>Email attachments are not analysed for malware.</li>
+    <li>Handle reports carefully because they may contain sensitive email content and personal information.</li>
+  </ul>
+</section>
+</main>
+<footer>PHISHGUARD · Generated locally · Treat this report as sensitive security evidence.</footer>
+</body>
+</html>

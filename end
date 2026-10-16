@@ -1,0 +1,18 @@
+#!/bin/bash
+
+cd "$HOME/Phishguard" || exit 1
+
+pattern='^\./\.venv/bin/python -m flask --app app.web run --no-debugger$'
+
+if pgrep -f "$pattern" >/dev/null; then
+    pkill -TERM -f "$pattern"
+    sleep 1
+
+    if pgrep -f "$pattern" >/dev/null; then
+        pkill -KILL -f "$pattern"
+    fi
+
+    echo "PHISHGUARD web server stopped."
+else
+    echo "PHISHGUARD web server is not running."
+fi

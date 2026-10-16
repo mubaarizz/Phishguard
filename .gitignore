@@ -1,0 +1,28 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+
+# Personal test reports
+results/real_email_test.txt
+results/testing_notes.txt
+
+# Large email datasets
+dataset/
+
+# Local backup files
+*.bak
+
+# Backup files
+*.backup*
+*.cleanup-backup*
+
+# Local logs, reports, and scan results
+logs/
+reports/
+results/
+
+# Email samples
+*.eml

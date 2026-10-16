@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Analysis Results | PHISHGUARD</title>
+        <style>
+            :root{color-scheme:dark;--bg:#07111f;--panel:#101e30;--border:#263950;--text:#edf4ff;--muted:#9aacc2;--teal:#45e0c0;--red:#ff727c;--amber:#ffc76b;--green:#72e3a2}
+            *{box-sizing:border-box}
+            body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,sans-serif}
+            header{padding:22px 5%;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+            .brand{font-size:21px;font-weight:800;letter-spacing:1px}.brand span{color:var(--teal)}
+            a{color:var(--teal);text-decoration:none}a:hover{text-decoration:underline}
+            main{max-width:1100px;margin:35px auto;padding:0 20px 50px}
+            h1{font-size:clamp(26px,4vw,38px);margin:0 0 8px}h2{font-size:18px;margin:0 0 18px}
+            .muted,small{color:var(--muted)}
+            .panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:22px;margin-top:20px;min-width:0}
+            .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+            .label{color:var(--muted);font-size:13px}.metric{font-size:27px;font-weight:800;overflow-wrap:anywhere}
+            .pill{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;background:#263950;overflow-wrap:anywhere}
+            .danger{color:var(--red)}.warning{color:var(--amber)}.success{color:var(--green)}
+            .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+            .button{display:inline-block;padding:11px 16px;border-radius:9px;background:var(--teal);color:#06131d;font-weight:800}
+            .button.secondary{background:#203249;color:var(--text);border:1px solid var(--border)}
+            .table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:520px}.url-table{table-layout:fixed}.url-table td:first-child{overflow-wrap:anywhere;word-break:break-word}
+            th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
+            th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+            pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;color:var(--text);background:#091624;padding:14px;border-radius:10px;max-height:360px;overflow:auto}
+            .finding{padding:12px 0;border-bottom:1px solid var(--border);overflow-wrap:anywhere}.finding:last-child{border-bottom:0}
+            .notice{border-left:3px solid var(--amber);padding:12px 14px;background:#1d2028;border-radius:6px}
+            footer{text-align:center;color:var(--muted);padding:25px;font-size:12px}
+            @media(max-width:650px){.grid{grid-template-columns:1fr}.panel{padding:17px}main{margin-top:24px}}
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="brand">⬡ PHISH<span>GUARD</span></div>
+            <a href="/">← Analyse another email</a>
+        </header>
+        <main>
+            <p class="muted">EMAIL SECURITY ANALYSIS</p>
+            <h1>Analysis results</h1>
+            <p class="muted">File: {{ result.email.get('file_name', 'Uploaded email') }}</p>
+            <div class="actions">
+                <a class="button" href="/report/{{ result.report_id }}">↓ Download HTML report</a>
+                <a class="button secondary" href="/">Analyse another email</a>
+            </div>
+
+            <section class="panel">
+                <h2>Email overview</h2>
+                <div class="grid">
+                    <div><div class="label">Subject</div>{{ result.email.get('subject') or '(No subject)' }}</div>
+                    <div><div class="label">Sender</div>{{ result.email.get('sender_name') or result.email.get('sender_email') or result.email.get('sender') or result.email.get('from') or '(Unknown sender)' }}</div>
+                    <div><div class="label">URLs extracted</div><div class="metric">{{ result.url_results|length }}</div></div>
+                    <div><div class="label">Reply-To</div>{{ result.email.get('reply_to') or '(Not provided)' }}</div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Machine-learning assessment</h2>
+                {% if result.ml %}
+                    {% set prediction = 'Legitimate' if (result.ml.get('predicted_label')|string) == '0' else 'Phishing (Malicious)' if (result.ml.get('predicted_label')|string) == '1' else 'Unknown' %}
+                    <div class="metric {% if 'phish' in (prediction|string)|lower %}danger{% elif 'safe' in (prediction|string)|lower or 'legitimate' in (prediction|string)|lower %}success{% else %}warning{% endif %}">{{ prediction }}</div>
+                    <p class="muted">{{ result.ml.get('note', 'Model prediction is an indicator, not a definitive verdict.') }}</p>
+                    <div class="grid">
+                        <div><div class="label">Legitimate probability</div><div class="metric">{{ '%.2f'|format((result.ml.get('label_0_probability', 0)|float)*100) }}%</div></div>
+                        <div><div class="label">Phishing (Malicious) probability</div><div class="metric">{{ '%.2f'|format((result.ml.get('label_1_probability', 0)|float)*100) }}%</div></div>
+                    </div>
+                {% else %}
+                    <p class="warning">ML assessment unavailable.</p>
+                    {% if result.ml_error %}<p>{{ result.ml_error }}</p>{% endif %}
+                {% endif %}
+                <p class="notice">A model prediction alone does not confirm whether an email is malicious or legitimate. Review all available evidence.</p>
+            </section>
+
+            <section class="panel">
+                <h2>Header security findings</h2>
+                {% set header_findings = result.header_analysis.get('findings', []) if result.header_analysis else [] %}
+                {% if header_findings %}
+                    {% for finding in header_findings %}
+                        <div class="finding">
+                            {% if finding is mapping %}
+                                <span class="pill">{{ finding.get('severity', 'Finding') }}</span>
+                                <div><strong>{{ finding.get('indicator', finding.get('message', 'Security finding')) }}</strong></div>
+                                <div>{{ finding.get('details', finding.get('detail', '')) }}</div>
+                            {% else %}
+                                <div>{{ finding }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="muted">No header findings were returned by the analyzer.</p>
+                {% endif %}
+            </section>
+
+            <section class="panel">
+                <h2>URL analysis</h2>
+                {% if result.url_results %}
+                    <div class="table-wrap">
+                        <table class="url-table">
+                            <colgroup>
+                                <col style="width:44%">
+                                <col style="width:17%">
+                                <col style="width:9%">
+                                <col style="width:30%">
+                            </colgroup>
+                            <thead><tr><th>URL</th><th>Risk level</th><th>Score</th><th>Findings</th></tr></thead>
+                            <tbody>
+                                {% for item in result.url_results %}
+                                    <tr>
+                                        <td>{{ item.get('url', 'Unknown URL') }}</td>
+                                        <td><span class="pill">{{ item.get('risk_level', 'Unknown') }}</span></td>
+                                        <td>{{ item.get('risk_score', 'N/A') }}</td>
+                                        <td>
+                                            {% for finding in item.get('findings', []) %}
+                                                <div>{{ finding }}</div>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="muted">URLs are assessed using local heuristics. PHISHGUARD does not open or visit the links.</p>
+                {% else %}
+                    <p class="muted">No URLs were extracted from the email.</p>
+                {% endif %}
+            </section>
+
+            <section class="panel">
+                <h2>Available header evidence</h2>
+                {% if result.headers %}
+                    {% for key, value in result.headers.items() %}
+                        <div class="finding"><div class="label">{{ key }}</div><div>{{ value or '(Empty)' }}</div></div>
+                    {% endfor %}
+                {% else %}
+                    <p class="muted">No header evidence available.</p>
+                {% endif %}
+                <p class="muted">Authentication headers are inspected as supplied by the email. This tool does not independently verify SPF, DKIM or DMARC.</p>
+            </section>
+
+            <section class="panel">
+                <h2>Extracted email text</h2>
+                <p class="muted">Preview of the text used for analysis. Attachments are not scanned.</p>
+<pre>{{ (result.email.get('body') or '(No readable email body extracted)')[:8000] }}</pre>
+            </section>
+        </main>
+        <footer>PHISHGUARD · Local email analysis · Use findings as investigative indicators, not a final verdict.</footer>
+    </body>
+</html>
