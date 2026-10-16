@@ -18,15 +18,15 @@ The project is intended for educational, research, and defensive cybersecurity p
 1. Features
 2. How PHISHGUARD Works
 3. Prerequisites
-4. Project Structure
-5. Finding the Project Directory
-6. Installation and Setup
-7. Python Dependencies
-8. Model Verification
-9. Using the Terminal Interface
-10. Using the Web Interface
-11. Choosing Between Interfaces
-12. Dataset and Model Training
+4. Dataset Download and Model Training
+5. Project Structure
+6. Finding the Project Directory
+7. Installation and Setup
+8. Python Dependencies
+9. Model Verification
+10. Using the Terminal Interface
+11. Using the Web Interface
+12. Choosing Between Interfaces
 13. Troubleshooting
 14. Security Considerations and Limitations
 15. License and Disclaimer
@@ -93,6 +93,27 @@ If required system packages are missing, install them on Kali Linux:
 sudo apt update
 sudo apt install python3-venv curl
 ```
+
+---
+
+## Dataset
+
+PHISHGUARD comes with a pre-trained machine learning model that is ready to use for phishing email detection. You do not need to train the model before using the tool.
+
+If you want to train the model yourself, retrain it, or experiment with the training process, you can download the dataset provided below and use it for training.
+
+**Download Dataset:** [Phishguard_Dataset.zip]([https://github.com/mubaarizz/Phishguard/releases/tag/v1.0.0])
+
+The dataset includes:
+- Enron
+- Ling
+- SpamAssassin
+- Nigerian Fraud
+- CEAS-08
+- Nazario
+- Combined Email Dataset
+
+**Note:** Training is optional for normal use. The pre-trained model is already included in the repository. Please follow the applicable dataset licences and terms when using or redistributing the data.
 
 ---
 
