@@ -18,7 +18,7 @@ The project is intended for educational, research, and defensive cybersecurity p
 1. Features
 2. How PHISHGUARD Works
 3. Prerequisites
-4. Dataset Download and Model Training
+4. Dataset Download
 5. Project Structure
 6. Finding the Project Directory
 7. Installation and Setup
@@ -27,9 +27,10 @@ The project is intended for educational, research, and defensive cybersecurity p
 10. Using the Terminal Interface
 11. Using the Web Interface
 12. Choosing Between Interfaces
-13. Troubleshooting
-14. Security Considerations and Limitations
-15. License and Disclaimer
+13. Dataset and Model Training
+14. Troubleshooting
+15. Security Considerations and Limitations
+16. License and Disclaimer
 
 ---
 
@@ -96,7 +97,7 @@ sudo apt install python3-venv curl
 
 ---
 
-## Dataset
+## 🗃️ Dataset Download
 
 PHISHGUARD comes with a pre-trained machine learning model that is ready to use for phishing email detection. You do not need to train the model before using the tool.
 
