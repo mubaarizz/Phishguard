@@ -103,7 +103,7 @@ PHISHGUARD comes with a pre-trained machine learning model that is ready to use 
 
 If you want to train the model yourself, retrain it, or experiment with the training process, you can download the dataset provided below and use it for training.
 
-**Download Dataset:** 📥 "Phishguard_Dataset.zip" (https://github.com/mubaarizz/Phishguard/releases/download/v1.0.0/Phishguard_Dataset.zip)
+📥 **Download Dataset**: "Phishguard_Dataset.zip" (https://github.com/mubaarizz/Phishguard/releases/download/v1.0.0/Phishguard_Dataset.zip)
 
 The dataset includes:
 - Enron
